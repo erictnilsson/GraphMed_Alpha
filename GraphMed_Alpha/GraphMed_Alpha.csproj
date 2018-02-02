@@ -32,6 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Neo4j.Driver, Version=1.4.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Neo4j.Driver.1.4.1\lib\net452\Neo4j.Driver.dll</HintPath>
     </Reference>
@@ -74,6 +75,7 @@
     <Compile Include="Handlers\CypherHandler\Cypher.cs" />
     <Compile Include="Handlers\CypherHandler\Cyphers\LoadCypher.cs" />
     <Compile Include="Handlers\CypherHandler\CypherHandler.cs" />
+    <Compile Include="Handlers\FileHandler.cs" />
     <Compile Include="Model\Concept.cs" />
     <Compile Include="Model\Description.cs" />
     <Compile Include="Model\Node.cs" />
