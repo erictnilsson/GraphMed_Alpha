@@ -24,10 +24,16 @@ namespace GraphMed_Alpha.Handlers
                     for (int i = 0; i < tmp.Length; i++)
                     {
                         var val = tmp[i];
-                        if (val.Contains("\""))
+                        if (val.Contains("\"") && val.IndexOf("\"") != val.LastIndexOf("\"")) // if there are multiple citation-marks
                         {
                             var a = val.Insert(val.IndexOf("\""), "\"");
                             a = a.Insert(a.LastIndexOf("\""), "\"");
+                            var line = "\"" + a + "\"";
+                            tmp[i] = line;
+
+                        } else if (val.Contains("\"") && val.IndexOf("\"") == val.LastIndexOf("\""))
+                        {
+                            var a = val.Insert(val.IndexOf("\""), "\"");
                             var line = "\"" + a + "\"";
                             tmp[i] = line;
                         }
