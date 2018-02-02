@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GraphMed_Alpha.Model
 {
-    class Description : Node
+    public class Description : Node
     {
         public string Id { get; set; }
         public string EffectiveTime { get; set; }

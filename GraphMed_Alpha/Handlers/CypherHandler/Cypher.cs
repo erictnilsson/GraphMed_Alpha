@@ -118,8 +118,9 @@ namespace GraphMed_Alpha.Handlers
 
         private static string GetBuildString(Node target)
         {
-            string targetLine = "";
+            var targetLine = "";
             var targetLength = target.GetType().GetProperties().Length;
+
             for (int i = 0; i < targetLength; i++)
             {
                 var propName = target.GetType().GetProperties()[i].Name;
@@ -133,19 +134,23 @@ namespace GraphMed_Alpha.Handlers
             return targetLine;
         }
 
-        public static void LoadDescriptions(bool demandAnchorNode)
+        public static void LoadDescriptions(bool forceAnchorNode)
         {
-            string uri = ConfigurationManager.AppSettings["description_snapshot_deluxe"];
+            var uri = ConfigurationManager.AppSettings["description_snapshot_deluxe"];
             var descriptId = "conceptId";
             var conceptId = "Id";
             var relationship = "refers_to";
 
-            BulkLoadCSVWithRelations(uri: uri, targetNode: new Description(), anchorNode: new Concept().GetType(), parentId: conceptId, childId: descriptId, relationship: relationship, forced: demandAnchorNode);
+            if (forceAnchorNode)
+                BulkLoadCSVWithRelations(uri: uri, targetNode: new Description(), anchorNode: new Concept().GetType(), parentId: conceptId, childId: descriptId, relationship: relationship);
+
+            else
+                BulkLoadCSV(uri, new Description());
         }
 
         public static void LoadConcepts()
         {
-            string uri = ConfigurationManager.AppSettings["concept_snapshot_deluxe"];
+            var uri = ConfigurationManager.AppSettings["concept_snapshot_deluxe"];
             BulkLoadCSV(uri, new Concept());
         }
 
@@ -160,17 +165,16 @@ namespace GraphMed_Alpha.Handlers
             }
         }
 
-        private static void BulkLoadCSVWithRelations(string uri, Node targetNode, Type anchorNode, string parentId, string childId, string relationship, bool forced)
+        private static void BulkLoadCSVWithRelations(string uri, Node targetNode, Type anchorNode, string parentId, string childId, string relationship)
         {
             using (var client = new ConnectionHandler().Connect())
             {
-                if (forced)
-                    client.Cypher
-                          .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: 200)
-                          .Match("(parent: " + anchorNode.Name + ")")
-                          .Where("parent." + parentId + " = csvLine." + childId)
-                          .Create("(n: " + targetNode.GetType().Name + " {" + GetBuildString(targetNode) + "})-[:" + relationship.ToUpper() + "]->(parent)")
-                          .ExecuteWithoutResults();
+                client.Cypher
+                      .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: 200)
+                      .Match("(parent: " + anchorNode.Name + ")")
+                      .Where("parent." + parentId + " = csvLine." + childId)
+                      .Create("(n: " + targetNode.GetType().Name + " {" + GetBuildString(targetNode) + "})-[:" + relationship.ToUpper() + "]->(parent)")
+                      .ExecuteWithoutResults();
             }
         }
 

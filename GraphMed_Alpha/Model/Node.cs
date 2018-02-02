@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GraphMed_Alpha.Model
 {
-    abstract class Node
+    public abstract class Node
     {
         public PropertyInfo GetField(string propertyName)
         {
