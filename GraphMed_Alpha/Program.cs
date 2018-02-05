@@ -21,10 +21,11 @@ namespace GraphMed_Alpha
 
             // Testing
 
-            //FileHandler.ValidateCSV("C:/Users/Eric Nilsson/Documents/Neo4j/default.graphdb/import/description_snapshot_deluxe.txt"); 
-            CypherHandler.Load().Concepts();
-            CypherHandler.Load().Descriptions(forceConceptRelation: false);
-            CypherHandler.Create().Relationships(concept: new Concept(), description: new Description()); 
+            //FileHandler.ValidateCSV("C:/Users/Eric Nilsson/Documents/Neo4j/default.graphdb/import/description_snapshot_deluxe"); 
+            FileHandler.SplitCSV("C:/Users/Eric Nilsson/Documents/Neo4j/default.graphdb/import/description_snapshot_deluxe", 4); 
+            //CypherHandler.Load().Concepts();
+            //CypherHandler.Load().Descriptions(forceConceptRelation: false);
+            //CypherHandler.Create().Relationships(concept: new Concept(), description: new Description()); 
 
             // Diagnostics purposes
             stopwatch.Stop();

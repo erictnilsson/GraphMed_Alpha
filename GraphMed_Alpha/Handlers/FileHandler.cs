@@ -31,7 +31,8 @@ namespace GraphMed_Alpha.Handlers
                             var line = "\"" + a + "\"";
                             tmp[i] = line;
 
-                        } else if (val.Contains("\"") && val.IndexOf("\"") == val.LastIndexOf("\""))
+                        }
+                        else if (val.Contains("\"") && val.IndexOf("\"") == val.LastIndexOf("\""))
                         {
                             var a = val.Insert(val.IndexOf("\""), "\"");
                             var line = "\"" + a + "\"";
@@ -45,5 +46,27 @@ namespace GraphMed_Alpha.Handlers
                 File.WriteAllLines(filepath, tmp1);
             }
         }
+
+        public static void SplitCSV(string filepath, int no_files)
+        {
+            var file = filepath + ".txt";
+            if (File.Exists(file))
+            {
+                var val = File.ReadAllLines(file);
+                var index = val.Count();
+                var step = index / no_files;
+                var skip = 0;
+                var j = step; 
+                for (int i = 0; i < no_files; i++)
+                {
+                    skip = i * step;
+                    File.WriteAllLines(filepath + i.ToString() + ".txt", val.Take(j).Skip(skip).ToArray());
+                    j += step;
+                }
+
+                //File.WriteAllLines(filepath + i.ToString() + ".txt", val.Take(no).ToArray());
+            }
+        }
     }
 }
+

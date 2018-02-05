@@ -24,7 +24,7 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
             else
                 BulkLoadCSV(uri, new Description());
 
-            IndexDescription(); 
+            IndexDescription();
         }
 
         public void Concepts()
@@ -32,7 +32,7 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
             var uri = ConfigurationManager.AppSettings["concept_snapshot_deluxe"];
 
             BulkLoadCSV(uri, new Concept());
-            IndexConcept(); 
+            IndexConcept();
         }
 
 
@@ -42,10 +42,23 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
         {
             using (var client = new ConnectionHandler().Connect())
             {
-                client.Cypher
-                    .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: 200)
-                    .Create("(n: " + targetNode.GetType().Name + " {" + GetBuildString(targetNode) + "})")
-                    .ExecuteWithoutResults();
+                try
+                {
+                    client.Cypher
+                   .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: 200)
+                   .Create("(n: " + targetNode.GetType().Name + " {" + GetBuildString(targetNode) + "})")
+                   .ExecuteWithoutResults();
+                }
+                catch (TaskCanceledException te)
+                {
+                    Console.WriteLine("Stacktrace:" + te.StackTrace);
+                    Console.WriteLine("Source: " + te.Source);
+                    Console.WriteLine("Message:" + te.Message);
+                    Console.WriteLine("CancellationToken: " + te.CancellationToken);
+                    Console.WriteLine("Data:" + te.Data);
+
+                    throw;
+                }
             }
         }
 
@@ -82,20 +95,20 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
 
         private void IndexConcept()
         {
-            CreateIndex(new Concept(), "id"); 
+            CreateIndex(new Concept(), "id");
         }
 
         private void IndexDescription()
         {
-            CreateIndex(new Description(), "conceptId"); 
+            CreateIndex(new Description(), "conceptId");
         }
 
         private void CreateIndex(Node target, string index_on)
         {
             using (var client = new ConnectionHandler().Connect())
             {
-                client.Cypher.Create("INDEX ON: " + target.GetType().Name + "("+index_on+")")
-                             .ExecuteWithoutResults(); 
+                client.Cypher.Create("INDEX ON: " + target.GetType().Name + "(" + index_on + ")")
+                             .ExecuteWithoutResults();
             }
         }
     }
