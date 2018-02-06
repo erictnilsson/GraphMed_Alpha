@@ -15,13 +15,15 @@ namespace GraphMed_Alpha
     {
         static void Main(string[] args)
         {
-            // Diagnostics purposes
+            /* <Diagnostics purposes> */
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            // Testing
+            /* <Testing purposes> */
+            CypherHandler.Drop().DescriptionUniqueConstraint(); 
+            CypherHandler.Load(1000, 200).Descriptions(forceConceptRelation: true);
 
-            // Diagnostics purposes
+            /* <Diagnostics purposes> */
             stopwatch.Stop();
             System.Diagnostics.Process.Start("http://127.0.0.1:7474/browser/");
             Console.WriteLine("Process completed in " + stopwatch.ElapsedMilliseconds + "ms");

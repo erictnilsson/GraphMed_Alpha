@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GraphMed_Alpha.Handlers.CypherHandler.Cyphers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +17,21 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
         public static CreateCypher Create()
         {
             return new CreateCypher();
+        }
+
+        public static MatchCypher Match(int? limit)
+        {
+            return new MatchCypher(limit); 
+        }
+
+        public static DeleteCypher Delete(int? limit)
+        {
+            return new DeleteCypher(limit); 
+        }
+
+        public static DropCypher Drop()
+        {
+            return new DropCypher(); 
         }
     }
 }

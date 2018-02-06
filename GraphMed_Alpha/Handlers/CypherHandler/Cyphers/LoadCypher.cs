@@ -1,4 +1,5 @@
-﻿using GraphMed_Alpha.Model;
+﻿using GraphMed_Alpha.Handlers.CypherHandler.Cyphers;
+using GraphMed_Alpha.Model;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -8,32 +9,29 @@ using System.Threading.Tasks;
 
 namespace GraphMed_Alpha.Handlers.CypherHandler
 {
-    class LoadCypher
+    class LoadCypher : Cypher
     {
-        int? limit { get; set; }
-        int? commitSize { get; set; }
+        private int? CommitSize { get; set; }
 
         public LoadCypher(int? limit, int? commitSize)
         {
-            this.limit = limit;
-            this.commitSize = commitSize;
+            this.Limit = limit;
+            this.CommitSize = commitSize;
         }
 
         /*---PUBLICS---*/
         public void Descriptions(bool forceConceptRelation)
         {
             var uri = ConfigurationManager.AppSettings["description_snapshot_deluxe"];
-            var descriptId = "conceptId";
-            var conceptId = "Id";
             var relationship = "refers_to";
 
             if (forceConceptRelation)
-                BulkLoadCSVWithRelations(uri: uri, targetNode: new Description(), anchorNode: new Concept().GetType(), parentId: conceptId, childId: descriptId, relationship: relationship);
+                BulkLoadCSVWithRelations(uri: uri, targetNode: new Description(), relationship: relationship, anchorNode: new Concept());
 
             else
                 BulkLoadCSV(uri, new Description());
 
-            Console.WriteLine("Waldo successfully loaded the Descriptions!"); 
+            Console.WriteLine("Waldo successfully loaded the Descriptions!");
             IndexDescription();
             SetConstraintOnDescription();
         }
@@ -48,33 +46,44 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
             SetConstraintOnConcept();
         }
 
-
-
         /*---PRIVATES---*/
         private void BulkLoadCSV(string uri, Node targetNode)
         {
             using (var client = new ConnectionHandler().Connect())
             {
-                client.Cypher
-               .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: commitSize)
-               .With("csvLine")
-               .Limit(limit)
-               .Create("(n: " + targetNode.GetType().Name + " {" + GetBuildString(targetNode) + "})")
-               .ExecuteWithoutResults();
+                try
+                {
+                    client.Cypher
+                          .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: CommitSize)
+                          .With("csvLine")
+                          .Limit(Limit)
+                          .Create("(n: " + targetNode.GetType().Name + " {" + GetBuildString(targetNode) + "})")
+                          .ExecuteWithoutResults();
+                }
+                catch (Neo4jClient.NeoException)
+                {
+                    throw;
+                }
+
             }
         }
 
-        private void BulkLoadCSVWithRelations(string uri, Node targetNode, Type anchorNode, string parentId, string childId, string relationship)
+        private void BulkLoadCSVWithRelations(string uri, Node targetNode, string relationship, Node anchorNode)
         {
+            string anchorType = anchorNode.GetType().Name;
+            string anchorLinkProp = anchorNode.LinkProp;
+            string targetType = targetNode.GetType().Name;
+            string targetLinkProp = targetNode.LinkProp.First().ToString().ToLower() + targetNode.LinkProp.Substring(1); 
+
             using (var client = new ConnectionHandler().Connect())
             {
                 client.Cypher
-                      .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: commitSize)
+                      .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: CommitSize)
                       .With("csvLine")
-                      .Limit(limit)
-                      .Match("(parent: " + anchorNode.Name + ")")
-                      .Where("parent." + parentId + " = csvLine." + childId)
-                      .Create("(n: " + targetNode.GetType().Name + " {" + GetBuildString(targetNode) + "})-[:" + relationship.ToUpper() + "]->(parent)")
+                      .Limit(Limit)
+                      .Match("(anchor: " + anchorType + ")")
+                      .Where("anchor." + anchorLinkProp + " = csvLine." + targetLinkProp)
+                      .Create("(target: " + targetType + " {" + GetBuildString(targetNode) + "})-[:" + relationship.ToUpper() + "]->(anchor)")
                       .ExecuteWithoutResults();
             }
         }
@@ -87,12 +96,17 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
             for (int i = 0; i < targetLength; i++)
             {
                 var propName = target.GetType().GetProperties()[i].Name;
+                var propLine = "";
 
-                var propLine = propName + ": csvLine." + propName.First().ToString().ToLower() + propName.Substring(1);
-                if (i != targetLength - 1)
-                    propLine += ", ";
+                if (!propName.Equals("LinkProp"))
+                {
+                    propLine = propName + ": csvLine." + propName.First().ToString().ToLower() + propName.Substring(1);
 
-                targetLine += propLine;
+                    if (i != targetLength - 2)
+                        propLine += ", ";
+
+                    targetLine += propLine;
+                }
             }
             return targetLine;
         }

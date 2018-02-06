@@ -9,6 +9,15 @@ namespace GraphMed_Alpha.Model
 {
     public abstract class Node
     {
+        public string LinkProp { get; protected set; }
+        
+        public Node() { }
+
+        public Node(string linkProp)
+        {
+            this.LinkProp = linkProp; 
+        }
+
         public PropertyInfo GetField(string propertyName)
         {
             return this.GetType().GetProperty(propertyName.First().ToString().ToUpper() + propertyName.Substring(1));

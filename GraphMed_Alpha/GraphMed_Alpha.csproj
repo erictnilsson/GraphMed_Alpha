@@ -72,9 +72,12 @@
   <ItemGroup>
     <Compile Include="Handlers\ConnectionHandler.cs" />
     <Compile Include="Handlers\CypherHandler\Cyphers\CreateCypher.cs" />
-    <Compile Include="Handlers\CypherHandler\Cypher.cs" />
+    <Compile Include="Handlers\CypherHandler\Cyphers\Cypher.cs" />
+    <Compile Include="Handlers\CypherHandler\Cyphers\DeleteCypher.cs" />
+    <Compile Include="Handlers\CypherHandler\Cyphers\DropCypher.cs" />
     <Compile Include="Handlers\CypherHandler\Cyphers\LoadCypher.cs" />
     <Compile Include="Handlers\CypherHandler\CypherHandler.cs" />
+    <Compile Include="Handlers\CypherHandler\Cyphers\MatchCypher.cs" />
     <Compile Include="Handlers\FileHandler.cs" />
     <Compile Include="Model\Concept.cs" />
     <Compile Include="Model\Description.cs" />

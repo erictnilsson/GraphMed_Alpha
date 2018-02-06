@@ -1,9 +1,10 @@
-﻿using GraphMed_Alpha.Model;
+﻿using GraphMed_Alpha.Handlers.CypherHandler.Cyphers;
+using GraphMed_Alpha.Model;
 using System;
 
 namespace GraphMed_Alpha.Handlers.CypherHandler
 {
-    public class CreateCypher
+    public class CreateCypher : Cypher
     {
 
         /*---PUBLICS---*/
