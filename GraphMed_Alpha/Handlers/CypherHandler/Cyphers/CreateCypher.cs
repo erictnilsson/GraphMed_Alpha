@@ -1,4 +1,5 @@
 ﻿using GraphMed_Alpha.Model;
+using System;
 
 namespace GraphMed_Alpha.Handlers.CypherHandler
 {
@@ -23,12 +24,16 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
              * WHERE (a.Id = t.AnchorId)
              * CREATE (a)-[:RELATIONSHIP]->(t)
              */
+            var tick = 0; 
             using (var client = new ConnectionHandler().Connect())
             {
                 client.Cypher.Match("(a:" + anchor.GetType().Name + ")", "(t:" + target.GetType().Name + ")")
                              .Where("a." + anchorId + " = " + "t." + targetAnchorId)
                              .Create("(a)-[:"+relationship.ToUpper()+"]->(t)")
                              .ExecuteWithoutResults();
+
+                tick++; 
+                Console.WriteLine("Created " + tick + " Relation"); 
             }
         }
     }

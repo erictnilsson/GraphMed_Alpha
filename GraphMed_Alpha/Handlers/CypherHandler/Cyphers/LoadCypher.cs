@@ -10,6 +10,15 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
 {
     class LoadCypher
     {
+        int? limit { get; set; }
+        int? commitSize { get; set; }
+
+        public LoadCypher(int? limit, int? commitSize)
+        {
+            this.limit = limit;
+            this.commitSize = commitSize;
+        }
+
         /*---PUBLICS---*/
         public void Descriptions(bool forceConceptRelation)
         {
@@ -24,7 +33,9 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
             else
                 BulkLoadCSV(uri, new Description());
 
+            Console.WriteLine("Waldo successfully loaded the Descriptions!"); 
             IndexDescription();
+            SetConstraintOnDescription();
         }
 
         public void Concepts()
@@ -32,42 +43,35 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
             var uri = ConfigurationManager.AppSettings["concept_snapshot_deluxe"];
 
             BulkLoadCSV(uri, new Concept());
-            IndexConcept();
+            Console.WriteLine("Waldo successfully loaded the Concepts!");
+            //IndexConcept();
+            SetConstraintOnConcept();
         }
 
 
 
         /*---PRIVATES---*/
-        private static void BulkLoadCSV(string uri, Node targetNode)
-        {
-            using (var client = new ConnectionHandler().Connect())
-            {
-                try
-                {
-                    client.Cypher
-                   .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: 200)
-                   .Create("(n: " + targetNode.GetType().Name + " {" + GetBuildString(targetNode) + "})")
-                   .ExecuteWithoutResults();
-                }
-                catch (TaskCanceledException te)
-                {
-                    Console.WriteLine("Stacktrace:" + te.StackTrace);
-                    Console.WriteLine("Source: " + te.Source);
-                    Console.WriteLine("Message:" + te.Message);
-                    Console.WriteLine("CancellationToken: " + te.CancellationToken);
-                    Console.WriteLine("Data:" + te.Data);
-
-                    throw;
-                }
-            }
-        }
-
-        private static void BulkLoadCSVWithRelations(string uri, Node targetNode, Type anchorNode, string parentId, string childId, string relationship)
+        private void BulkLoadCSV(string uri, Node targetNode)
         {
             using (var client = new ConnectionHandler().Connect())
             {
                 client.Cypher
-                      .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: 200)
+               .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: commitSize)
+               .With("csvLine")
+               .Limit(limit)
+               .Create("(n: " + targetNode.GetType().Name + " {" + GetBuildString(targetNode) + "})")
+               .ExecuteWithoutResults();
+            }
+        }
+
+        private void BulkLoadCSVWithRelations(string uri, Node targetNode, Type anchorNode, string parentId, string childId, string relationship)
+        {
+            using (var client = new ConnectionHandler().Connect())
+            {
+                client.Cypher
+                      .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: commitSize)
+                      .With("csvLine")
+                      .Limit(limit)
                       .Match("(parent: " + anchorNode.Name + ")")
                       .Where("parent." + parentId + " = csvLine." + childId)
                       .Create("(n: " + targetNode.GetType().Name + " {" + GetBuildString(targetNode) + "})-[:" + relationship.ToUpper() + "]->(parent)")
@@ -75,7 +79,7 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
             }
         }
 
-        private static string GetBuildString(Node target)
+        private string GetBuildString(Node target)
         {
             var targetLine = "";
             var targetLength = target.GetType().GetProperties().Length;
@@ -93,14 +97,37 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
             return targetLine;
         }
 
+
+        private void SetConstraintOnConcept()
+        {
+            SetConstraint(new Concept(), "Id");
+            Console.WriteLine("Waldo successfully constrained Concept at Id!");
+        }
+
+        private void SetConstraintOnDescription()
+        {
+            SetConstraint(new Description(), "Id");
+            Console.WriteLine("Waldo successfully constrained Description at Id!");
+        }
+
+        private void SetConstraint(Node target, string constraint_on)
+        {
+            using (var client = new ConnectionHandler().Connect())
+            {
+                client.Cypher.CreateUniqueConstraint("n:" + target.GetType().Name, "n." + constraint_on)
+                             .ExecuteWithoutResults();
+            }
+        }
+
         private void IndexConcept()
         {
-            CreateIndex(new Concept(), "id");
+            CreateIndex(new Concept(), "Id");
         }
 
         private void IndexDescription()
         {
-            CreateIndex(new Description(), "conceptId");
+            CreateIndex(new Description(), "ConceptId");
+            Console.WriteLine("Waldo successfully indexed the descriptions at ConceptId!");
         }
 
         private void CreateIndex(Node target, string index_on)

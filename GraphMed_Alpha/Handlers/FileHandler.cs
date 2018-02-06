@@ -10,62 +10,54 @@ namespace GraphMed_Alpha.Handlers
 {
     class FileHandler
     {
+        /* ---PUBLICS--- */
         public static void ValidateCSV(string filepath)
         {
-            if (File.Exists(filepath))
+            if (filepath != null || File.Exists(filepath))
             {
-                string[] tmp1 = File.ReadAllLines(filepath);
-                string[] tmp = new string[0];
+                var allLines = File.ReadAllLines(filepath);
+                var row = new string[0];
 
-                for (int j = 0; j < tmp1.Length; j++)
+                for (int i = 0; i < allLines.Length; i++) // for each line 
                 {
-                    string abc = "";
-                    tmp = tmp1[j].Split('\t');
-                    for (int i = 0; i < tmp.Length; i++)
+                    var tmp = "";
+                    row = allLines[i].Split('\t'); // split the row at tabs
+                    for (int j = 0; j < row.Length; j++) // for each cell in row
                     {
-                        var val = tmp[i];
-                        if (val.Contains("\"") && val.IndexOf("\"") != val.LastIndexOf("\"")) // if there are multiple citation-marks
+                        var val = row[j]; // value at cell j
+                        if (val.Contains("\"")) // if the cell contains a quotation mark
                         {
-                            var a = val.Insert(val.IndexOf("\""), "\"");
-                            a = a.Insert(a.LastIndexOf("\""), "\"");
-                            var line = "\"" + a + "\"";
-                            tmp[i] = line;
-
+                            var line = new StringBuilder(val);
+                            var r = FindAllIndexesOf(val, "\"");
+                            var tick = 0;
+                            foreach (var a in FindAllIndexesOf(val, "\""))
+                            {
+                                line.Insert(a + tick, "\"");
+                                tick++;
+                            }
+                            row[j] = "\"" + line.ToString() + "\"";
                         }
-                        else if (val.Contains("\"") && val.IndexOf("\"") == val.LastIndexOf("\""))
-                        {
-                            var a = val.Insert(val.IndexOf("\""), "\"");
-                            var line = "\"" + a + "\"";
-                            tmp[i] = line;
-                        }
-                        abc += tmp[i] + "\t";
+                        tmp += row[j] + "\t";
                     }
-                    tmp1[j] = abc;
+                    allLines[i] = tmp;
                 }
-
-                File.WriteAllLines(filepath, tmp1);
+                File.WriteAllLines(filepath, allLines);
             }
+            else
+                Console.WriteLine("File not found");
         }
 
-        public static void SplitCSV(string filepath, int no_files)
+        /* ---PRIVATES--- */
+        private static int[] FindAllIndexesOf(string source, string match)
         {
-            var file = filepath + ".txt";
-            if (File.Exists(file))
-            {
-                var val = File.ReadAllLines(file);
-                var index = val.Count();
-                var step = index / no_files;
-                var skip = 0;
-                var j = step; 
-                for (int i = 0; i < no_files; i++)
-                {
-                    skip = i * step;
-                    File.WriteAllLines(filepath + i.ToString() + ".txt", val.Take(j).Skip(skip).ToArray());
-                    j += step;
-                }
+            var indexes = new List<int>();
+            int index = 0;
 
-                //File.WriteAllLines(filepath + i.ToString() + ".txt", val.Take(no).ToArray());
+            while ((index = source.IndexOf(match, index)) != -1)
+            {
+                indexes.Add(index++);
             }
+            return indexes.ToArray();
         }
     }
 }

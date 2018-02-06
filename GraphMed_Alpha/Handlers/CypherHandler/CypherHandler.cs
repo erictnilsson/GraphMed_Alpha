@@ -8,14 +8,14 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
 {
     class CypherHandler
     {
-        public static LoadCypher Load()
+        public static LoadCypher Load(int? limit, int? commit)
         {
-            return new LoadCypher();
+            return new LoadCypher(limit, commit);
         }
 
         public static CreateCypher Create()
         {
-            return new CreateCypher(); 
-        } 
+            return new CreateCypher();
+        }
     }
 }

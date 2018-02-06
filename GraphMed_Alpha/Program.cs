@@ -21,15 +21,9 @@ namespace GraphMed_Alpha
 
             // Testing
 
-            //FileHandler.ValidateCSV("C:/Users/Eric Nilsson/Documents/Neo4j/default.graphdb/import/description_snapshot_deluxe"); 
-            FileHandler.SplitCSV("C:/Users/Eric Nilsson/Documents/Neo4j/default.graphdb/import/description_snapshot_deluxe", 4); 
-            //CypherHandler.Load().Concepts();
-            //CypherHandler.Load().Descriptions(forceConceptRelation: false);
-            //CypherHandler.Create().Relationships(concept: new Concept(), description: new Description()); 
-
             // Diagnostics purposes
             stopwatch.Stop();
-            //System.Diagnostics.Process.Start("http://127.0.0.1:7474/browser/");
+            System.Diagnostics.Process.Start("http://127.0.0.1:7474/browser/");
             Console.WriteLine("Process completed in " + stopwatch.ElapsedMilliseconds + "ms");
             Console.ReadLine(); 
         }
