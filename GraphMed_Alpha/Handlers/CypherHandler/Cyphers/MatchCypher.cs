@@ -15,33 +15,34 @@ namespace GraphMed_Alpha.Handlers.CypherHandler.Cyphers
 
         public Concept Concept(string id)
         {
-            return GetNode<Concept>(id, "Id").First();
+            return GetNode<Concept>(id, "Id").Single();
         }
 
         public Description Description(string id)
         {
-            return GetNode<Description>(id, "Id").First();
+            return GetNode<Description>(id, "Id").Single();
         }
 
 
-        public Dictionary<Description, Concept> ByTerm(string searchTerm)
+        public Dictionary<Description, Concept> NodesByTerm(string searchTerm)
         {
-            return GetNodes<Description, Concept>(searchTerm: searchTerm, searchBy: "Term", relationship: "refers_to"); 
+            return GetLinkedNodes<Description, Concept>(searchTerm: searchTerm, searchBy: "Term", relationship: "refers_to"); 
         }
 
-        private Dictionary<T1, T2> GetNodes<T1, T2>(string searchTerm, string searchBy, string relationship)
+        public void NodesByConceptId(string searchTerm)
         {
-            /* 
-             * MATCH(d:Description)-[:REFERS_TO]->(c:Concept)
-             * WHERE d.Term = "Duckbill flathead"
-             * RETURN d, c 
-             */
+            var a = GetLinkedNodes<Concept, Description>(searchTerm: searchTerm, searchBy: "Id", relationship: "refers_to");
+            Console.WriteLine(); 
+        }
+
+        private Dictionary<T1, T2> GetLinkedNodes<T1, T2>(string searchTerm, string searchBy, string relationship)
+        {
             var anchorType = typeof(T1).Name;
             var targetType = typeof(T2).Name;
             try
             {
                 var result = Client.Cypher
-                                   .Match("(a:" + anchorType + ")-[:" + relationship.ToUpper() + "]->(t:" + targetType + ")")
+                                   .Match("(a:" + anchorType + ")-[:" + relationship.ToUpper() + "]-(t:" + targetType + ")")
                                    .Where("a." + searchBy + " = '" + searchTerm + "'")
                                    .Return((a, t) => new
                                    {
@@ -50,6 +51,7 @@ namespace GraphMed_Alpha.Handlers.CypherHandler.Cyphers
                                    })
                                    .Results;
 
+                Console.WriteLine(); 
                 return new Dictionary<T1, T2>
                 {
                     {

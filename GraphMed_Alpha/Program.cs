@@ -21,9 +21,11 @@ namespace GraphMed_Alpha
 
             /* <Testing purposes> */
             //var c = CypherHandler.Match(limit: null).Description(id: "1271013");
-            var a = CypherHandler.Match(limit: null).ByTerm("Duckbill flathead");
-            var b = a.Values.First(); 
-            Console.WriteLine(a.Values); 
+            //var a = CypherHandler.Match(limit: null).NodesByTerm("Duckbill flathead");
+            //var b = a.Values.Single(); 
+            //Console.WriteLine("Concept DefinitionStatusId: " + b.DefinitionStatusId); 
+
+            CypherHandler.Match(limit: null).NodesByConceptId("111002"); 
 
             /* <Diagnostics purposes> */
             stopwatch.Stop();
