@@ -20,8 +20,10 @@ namespace GraphMed_Alpha
             stopwatch.Start();
 
             /* <Testing purposes> */
-            var c = CypherHandler.Match(limit: null).Description(id: "1271013");
-            Console.WriteLine(c.Term); 
+            //var c = CypherHandler.Match(limit: null).Description(id: "1271013");
+            var a = CypherHandler.Match(limit: null).ByTerm("Duckbill flathead");
+            var b = a.Values.First(); 
+            Console.WriteLine(a.Values); 
 
             /* <Diagnostics purposes> */
             stopwatch.Stop();
