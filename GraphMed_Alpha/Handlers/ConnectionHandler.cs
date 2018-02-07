@@ -11,34 +11,31 @@ namespace GraphMed_Alpha.Handlers
 {
     class ConnectionHandler : IDisposable
     {
-        private static string user { get; set; }
-        private static string pass { get; set; }
-        private static string uri { get; set; }
-        private static double timeout { get; set; }
-        private static HttpClient httpClient { get; set; }
+        private static string User { get; set; }
+        private static string Pass { get; set; }
+        private static string Uri { get; set; }
+        private static HttpClient HttpClient { get; set; }
         public ConnectionHandler()
         {
-            user = ConfigurationManager.AppSettings["GraphDBUser"];
-            pass = ConfigurationManager.AppSettings["GraphDBPassword"];
-            uri = ConfigurationManager.AppSettings["ClientUri"];
-            timeout = 2D;
-            httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(timeout) };
+            User = ConfigurationManager.AppSettings["GraphDBUser"];
+            Pass = ConfigurationManager.AppSettings["GraphDBPassword"];
+            Uri = ConfigurationManager.AppSettings["ClientUri"];
+            HttpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(2D) };
             //this.Connect(); 
         }
 
         public GraphClient Connect()
         {
-            var client = new GraphClient(new Uri(uri), new HttpClientWrapper(user, pass, httpClient));
+            var client = new GraphClient(new Uri(Uri), new HttpClientWrapper(User, Pass, HttpClient));
             client.Connect();
 
-            // var client = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
-            //GraphClient gc = new GraphClient(new Uri("http://localhost:7474/db/data"), new HttpClientWrapper("user", "pass", client));
             return client;
         }
 
         public void Dispose()
         {
-            this?.Dispose();
+            HttpClient?.Dispose();
+            GC.SuppressFinalize(this); 
         }
     }
 }

@@ -20,12 +20,12 @@ namespace GraphMed_Alpha
             stopwatch.Start();
 
             /* <Testing purposes> */
-            CypherHandler.Drop().DescriptionUniqueConstraint(); 
-            CypherHandler.Load(1000, 200).Descriptions(forceConceptRelation: true);
+            var c = CypherHandler.Match(limit: null).Description(id: "1271013");
+            Console.WriteLine(c.Term); 
 
             /* <Diagnostics purposes> */
             stopwatch.Stop();
-            System.Diagnostics.Process.Start("http://127.0.0.1:7474/browser/");
+            //System.Diagnostics.Process.Start("http://127.0.0.1:7474/browser/");
             Console.WriteLine("Process completed in " + stopwatch.ElapsedMilliseconds + "ms");
             Console.ReadLine(); 
         }

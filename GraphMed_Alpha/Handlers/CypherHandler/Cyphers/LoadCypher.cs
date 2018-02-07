@@ -1,5 +1,6 @@
 ﻿using GraphMed_Alpha.Handlers.CypherHandler.Cyphers;
 using GraphMed_Alpha.Model;
+using Neo4jClient;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -13,9 +14,8 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
     {
         private int? CommitSize { get; set; }
 
-        public LoadCypher(int? limit, int? commitSize)
+        public LoadCypher(int? limit, int? commitSize) : base(limit)
         {
-            this.Limit = limit;
             this.CommitSize = commitSize;
         }
 
@@ -32,7 +32,8 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
                 BulkLoadCSV(uri, new Description());
 
             Console.WriteLine("Waldo successfully loaded the Descriptions!");
-            IndexDescription();
+
+            IndexDescription(); 
             SetConstraintOnDescription();
         }
 
@@ -49,22 +50,22 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
         /*---PRIVATES---*/
         private void BulkLoadCSV(string uri, Node targetNode)
         {
-            using (var client = new ConnectionHandler().Connect())
+            try
             {
-                try
-                {
-                    client.Cypher
-                          .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: CommitSize)
-                          .With("csvLine")
-                          .Limit(Limit)
-                          .Create("(n: " + targetNode.GetType().Name + " {" + GetBuildString(targetNode) + "})")
-                          .ExecuteWithoutResults();
-                }
-                catch (Neo4jClient.NeoException)
-                {
-                    throw;
-                }
-
+                Client.Cypher
+                      .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: CommitSize)
+                      .With("csvLine")
+                      .Limit(Limit)
+                      .Create("(n: " + targetNode.GetType().Name + " {" + GetBuildString(targetNode) + "})")
+                      .ExecuteWithoutResults();
+            }
+            catch (NeoException)
+            {
+                throw;
+            }
+            finally
+            {
+                Client.Dispose();
             }
         }
 
@@ -72,19 +73,85 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
         {
             string anchorType = anchorNode.GetType().Name;
             string anchorLinkProp = anchorNode.LinkProp;
-            string targetType = targetNode.GetType().Name;
-            string targetLinkProp = targetNode.LinkProp.First().ToString().ToLower() + targetNode.LinkProp.Substring(1); 
 
-            using (var client = new ConnectionHandler().Connect())
+            string targetType = targetNode.GetType().Name;
+            string targetLinkProp = targetNode.LinkProp.First().ToString().ToLower() + targetNode.LinkProp.Substring(1);
+
+            try
             {
-                client.Cypher
-                      .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: CommitSize)
-                      .With("csvLine")
-                      .Limit(Limit)
-                      .Match("(anchor: " + anchorType + ")")
-                      .Where("anchor." + anchorLinkProp + " = csvLine." + targetLinkProp)
-                      .Create("(target: " + targetType + " {" + GetBuildString(targetNode) + "})-[:" + relationship.ToUpper() + "]->(anchor)")
-                      .ExecuteWithoutResults();
+                Client.Cypher
+                  .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: CommitSize)
+                  .With("csvLine")
+                  .Limit(Limit)
+                  .Match("(anchor: " + anchorType + ")")
+                  .Where("anchor." + anchorLinkProp + " = csvLine." + targetLinkProp)
+                  .Create("(target: " + targetType + " {" + GetBuildString(targetNode) + "})-[:" + relationship.ToUpper() + "]->(anchor)")
+                  .ExecuteWithoutResults();
+            }
+            catch (NeoException)
+            {
+                throw;
+            }
+            finally
+            {
+                Client.Dispose();
+            }
+        }
+
+        private void SetConstraintOnConcept()
+        {
+            SetConstraint(new Concept(), "Id");
+            Console.WriteLine("Waldo successfully constrained Concept at Id!");
+        }
+
+        private void SetConstraintOnDescription()
+        {
+            SetConstraint(new Description(), "Id");
+            Console.WriteLine("Waldo successfully constrained Description at Id!");
+        }
+
+        private void SetConstraint(Node target, string constraint_on)
+        {
+            try
+            {
+                Client.Cypher.CreateUniqueConstraint("n:" + target.GetType().Name, "n." + constraint_on)
+                         .ExecuteWithoutResults();
+            }
+            catch (NeoException)
+            {
+                throw;
+            }
+            finally
+            {
+                Client.Dispose();
+            }
+        }
+
+        private void IndexConcept()
+        {
+            CreateIndex(new Concept(), "Id");
+        }
+
+        private void IndexDescription()
+        {
+            CreateIndex(new Description(), "ConceptId");
+            Console.WriteLine("Waldo successfully indexed the descriptions at ConceptId!");
+        }
+
+        private void CreateIndex(Node target, string index_on)
+        {
+            try
+            {
+                Client.Cypher.Create("INDEX ON: " + target.GetType().Name + "(" + index_on + ")")
+                         .ExecuteWithoutResults();
+            }
+            catch (NeoException)
+            {
+                throw;
+            }
+            finally
+            {
+                Client.Dispose();
             }
         }
 
@@ -109,48 +176,6 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
                 }
             }
             return targetLine;
-        }
-
-
-        private void SetConstraintOnConcept()
-        {
-            SetConstraint(new Concept(), "Id");
-            Console.WriteLine("Waldo successfully constrained Concept at Id!");
-        }
-
-        private void SetConstraintOnDescription()
-        {
-            SetConstraint(new Description(), "Id");
-            Console.WriteLine("Waldo successfully constrained Description at Id!");
-        }
-
-        private void SetConstraint(Node target, string constraint_on)
-        {
-            using (var client = new ConnectionHandler().Connect())
-            {
-                client.Cypher.CreateUniqueConstraint("n:" + target.GetType().Name, "n." + constraint_on)
-                             .ExecuteWithoutResults();
-            }
-        }
-
-        private void IndexConcept()
-        {
-            CreateIndex(new Concept(), "Id");
-        }
-
-        private void IndexDescription()
-        {
-            CreateIndex(new Description(), "ConceptId");
-            Console.WriteLine("Waldo successfully indexed the descriptions at ConceptId!");
-        }
-
-        private void CreateIndex(Node target, string index_on)
-        {
-            using (var client = new ConnectionHandler().Connect())
-            {
-                client.Cypher.Create("INDEX ON: " + target.GetType().Name + "(" + index_on + ")")
-                             .ExecuteWithoutResults();
-            }
         }
     }
 }
