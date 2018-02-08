@@ -17,6 +17,7 @@ namespace GraphMed_Alpha.Model
         public string TypeId { get; set; }
         public string Term { get; set; }
         public string CaseSignificanceId { get; set; }
+        public Concept Concept { get; set; }
 
         public Description() : base()
         {

@@ -70,6 +70,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DisplayHandler\Display.cs" />
     <Compile Include="Handlers\ConnectionHandler.cs" />
     <Compile Include="Handlers\CypherHandler\Cyphers\CreateCypher.cs" />
     <Compile Include="Handlers\CypherHandler\Cyphers\Cypher.cs" />

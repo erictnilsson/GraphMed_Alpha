@@ -1,13 +1,8 @@
-﻿using GraphMed_Alpha.Handlers;
-using GraphMed_Alpha.Handlers.CypherHandler;
-using GraphMed_Alpha.Model;
+﻿using GraphMed_Alpha.Handlers.CypherHandler;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using GraphMed_Alpha.DisplayHandler;
+using GraphMed_Alpha.Model;
 
 namespace GraphMed_Alpha
 {
@@ -20,13 +15,14 @@ namespace GraphMed_Alpha
             stopwatch.Start();
 
             /* <Testing purposes> */
-            //var c = CypherHandler.Match(limit: null).Description(id: "1271013");
-            //var a = CypherHandler.Match(limit: null).NodesByTerm("Duckbill flathead");
-            //var b = a.Values.Single(); 
-            //Console.WriteLine("Concept DefinitionStatusId: " + b.DefinitionStatusId); 
-
-            CypherHandler.Match(limit: null).NodesByConceptId("111002"); 
-
+            var a = CypherHandler.Match(null).ByTerm("Duckbill flathead"); 
+           //var a = CypherHandler.Match(null).DoStuff<Description, Concept>(searchTerm: "Duckbill flathead", searchBy: "Term", relationship: "refers_to"); 
+            foreach (var tmp in a)
+            {
+                tmp.Print();
+                Console.Write("\n"); 
+            }
+                
             /* <Diagnostics purposes> */
             stopwatch.Stop();
             //System.Diagnostics.Process.Start("http://127.0.0.1:7474/browser/");

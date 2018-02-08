@@ -13,10 +13,12 @@ namespace GraphMed_Alpha.Model
         public string Active { get; set; }
         public string ModuleId { get; set; }
         public string DefinitionStatusId { get; set; }
+        public List<Description> Descriptions { get; set; }
 
         public Concept() : base()
         {
-            this.LinkProp = "Id"; 
+            this.LinkProp = "Id";
+            Descriptions = new List<Description>(); 
         }
 
         public Concept(string id, string effectiveTime, string active, string moduleId, string definitionStatusId)

@@ -1,4 +1,5 @@
-﻿using GraphMed_Alpha.Model;
+﻿using GraphMed_Alpha.DisplayHandler;
+using GraphMed_Alpha.Model;
 using Neo4jClient;
 using System;
 using System.Collections.Generic;
@@ -13,29 +14,71 @@ namespace GraphMed_Alpha.Handlers.CypherHandler.Cyphers
         public MatchCypher(int? limit) : base(limit) { }
 
 
-        public Concept Concept(string id)
+
+        public IEnumerable<Display> ByTerm(string searchTerm)
         {
-            return GetNode<Concept>(id, "Id").Single();
+            try
+            {
+                return Client.Cypher
+                             .Match("(concept:Concept)-[:REFERS_TO]-(description:Description)")
+                             .Where("description.Term = '"+searchTerm+"'")
+                             .Return<Display>("description")
+                             .Results; 
+            } finally
+            {
+                Client.Dispose(); 
+            }
         }
 
-        public Description Description(string id)
+        public IEnumerable<Display> ByConceptId(string searchTerm)
         {
-            return GetNode<Description>(id, "Id").Single();
+            try
+            {
+                return Client.Cypher
+                             .Match("(concept:Concept)-[:REFERS_TO]-(description:Description)")
+                             .Where("concept.Id = '" + searchTerm + "'")
+                             .Return<Display>("description")
+                             .Results;
+
+            }
+            finally
+            {
+                Client.Dispose();
+            }
         }
 
 
-        public Dictionary<Description, Concept> NodesByTerm(string searchTerm)
+        public IEnumerable<Display> DoStuff<T1, T2>(string searchTerm, string searchBy, string relationship)
         {
-            return GetLinkedNodes<Description, Concept>(searchTerm: searchTerm, searchBy: "Term", relationship: "refers_to"); 
+            var anchorType = typeof(T1).Name;
+            var targetType = typeof(T2).Name;
+
+            try
+            {
+                var result = Client.Cypher
+                                   .Match("(anchor:" + anchorType + ")-[:" + relationship.ToUpper() + "]-(target:" + targetType + ")")
+                                   .Where("anchor." + searchBy + " = '" + searchTerm + "'")
+                                   .Return<Display>("target")
+                                   .Results;
+
+                if (result != null)
+                    return result;
+                else
+                    return null;
+            }
+            catch (NeoException)
+            {
+                throw;
+            }
+            finally
+            {
+                Client.Dispose();
+            }
+
+
         }
 
-        public void NodesByConceptId(string searchTerm)
-        {
-            var a = GetLinkedNodes<Concept, Description>(searchTerm: searchTerm, searchBy: "Id", relationship: "refers_to");
-            Console.WriteLine(); 
-        }
-
-        private Dictionary<T1, T2> GetLinkedNodes<T1, T2>(string searchTerm, string searchBy, string relationship)
+        private Dictionary<T1, IEnumerable<T2>> OneToMany<T1, T2>(string searchTerm, string searchBy, string relationship)
         {
             var anchorType = typeof(T1).Name;
             var targetType = typeof(T2).Name;
@@ -47,12 +90,12 @@ namespace GraphMed_Alpha.Handlers.CypherHandler.Cyphers
                                    .Return((a, t) => new
                                    {
                                        a = a.As<T1>(),
-                                       t = t.As<T2>()
+                                       t = t.CollectAs<T2>()
                                    })
                                    .Results;
 
-                Console.WriteLine(); 
-                return new Dictionary<T1, T2>
+                Console.WriteLine();
+                return new Dictionary<T1, IEnumerable<T2>>
                 {
                     {
                       result.First().a,
@@ -70,30 +113,8 @@ namespace GraphMed_Alpha.Handlers.CypherHandler.Cyphers
             }
         }
 
-        private IEnumerable<T> GetNode<T>(string searchTerm, string searchBy)
-        {
-            var type = typeof(T);
 
-            try
-            {
-                var result = Client.Cypher
-                                   .Match("(node:" + type.Name + ")")
-                                   .Where("node." + searchBy + " = '" + searchTerm + "'")
-                                   .With("node")
-                                   .Limit(Limit)
-                                   .Return(node => node.As<T>())
-                                   .Results;
 
-                return result;
-            }
-            catch (NeoException)
-            {
-                throw;
-            }
-            finally
-            {
-                Client.Dispose();
-            }
-        }
+
     }
 }
