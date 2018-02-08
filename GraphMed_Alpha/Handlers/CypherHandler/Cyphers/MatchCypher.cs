@@ -12,9 +12,7 @@ namespace GraphMed_Alpha.Handlers.CypherHandler.Cyphers
     class MatchCypher : Cypher
     {
         public MatchCypher(int? limit) : base(limit) { }
-
-
-
+        
         public IEnumerable<Display> ByTerm(string searchTerm)
         {
             try
@@ -47,7 +45,6 @@ namespace GraphMed_Alpha.Handlers.CypherHandler.Cyphers
             }
         }
 
-
         public IEnumerable<Display> DoStuff<T1, T2>(string searchTerm, string searchBy, string relationship)
         {
             var anchorType = typeof(T1).Name;
@@ -74,47 +71,6 @@ namespace GraphMed_Alpha.Handlers.CypherHandler.Cyphers
             {
                 Client.Dispose();
             }
-
-
         }
-
-        private Dictionary<T1, IEnumerable<T2>> OneToMany<T1, T2>(string searchTerm, string searchBy, string relationship)
-        {
-            var anchorType = typeof(T1).Name;
-            var targetType = typeof(T2).Name;
-            try
-            {
-                var result = Client.Cypher
-                                   .Match("(a:" + anchorType + ")-[:" + relationship.ToUpper() + "]-(t:" + targetType + ")")
-                                   .Where("a." + searchBy + " = '" + searchTerm + "'")
-                                   .Return((a, t) => new
-                                   {
-                                       a = a.As<T1>(),
-                                       t = t.CollectAs<T2>()
-                                   })
-                                   .Results;
-
-                Console.WriteLine();
-                return new Dictionary<T1, IEnumerable<T2>>
-                {
-                    {
-                      result.First().a,
-                      result.First().t
-                    }
-                };
-            }
-            catch (NeoException)
-            {
-                throw;
-            }
-            finally
-            {
-                Client.Dispose();
-            }
-        }
-
-
-
-
     }
 }
