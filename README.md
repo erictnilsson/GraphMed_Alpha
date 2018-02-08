@@ -6,7 +6,7 @@ One Paragraph of the project description
 
 Some notes about getting started
 
-### Preqeuisites
+### Prerequisites
 
 What things you need to install the software and how to install them
 
