@@ -48,7 +48,7 @@ CypherHandler.Match(int? limit?)
 ### Create
 
 ### Load
-The Load-function is based on Cyphers ***LOADCSV***. Apart from the ***limit*** parameter, Load also contains the ***commit*** parameter. This means that when you call ***Load***, you need to specify how many rows in the .CSV file you want to import and the size of the periodic commit. The parameters are nullable if you don't want to set a limit or use the default commit size.
+The Load-function is based on Cyphers **LOADCSV**. Apart from the **limit** parameter, Load also contains the **commit** parameter. This means that when you call **Load**, you need to specify how many rows in the .CSV file you want to import and the size of the periodic commit. The parameters are nullable if you don't want to set a limit or use the default commit size.
 The function can in turn call on the different Nodes that you can build the graph database with: 
 ```
 CypherHandler.Load(limit: 2000, commit: 200).Concepts(); 
