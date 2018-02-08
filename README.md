@@ -1,4 +1,4 @@
-##GraphMed
+## GraphMed
 
 One Paragraph of the project description
 
