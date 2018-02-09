@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using GraphMed_Alpha.DisplayHandler;
 using GraphMed_Alpha.Model;
+using GraphMed_Alpha.Handlers;
 
 namespace GraphMed_Alpha
 {
@@ -13,21 +14,24 @@ namespace GraphMed_Alpha
             /* <Diagnostics purposes> */
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-
             /* <Testing purposes> */
-            var a = CypherHandler.Match(null).ByTerm("Duckbill flathead"); 
-           //var a = CypherHandler.Match(null).DoStuff<Description, Concept>(searchTerm: "Duckbill flathead", searchBy: "Term", relationship: "refers_to"); 
-            foreach (var tmp in a)
+            Console.WriteLine("Search: ");
+            string search = Console.ReadLine();
+
+            var a = CypherHandler.Match(null).ByTerm(true, search);
+            foreach (var i in a)
             {
-                tmp.Print();
-                Console.Write("\n"); 
+                i.Print();
+                Console.WriteLine(); 
             }
-                
+            Console.Read();
+           
+
             /* <Diagnostics purposes> */
             stopwatch.Stop();
             //System.Diagnostics.Process.Start("http://127.0.0.1:7474/browser/");
             Console.WriteLine("Process completed in " + stopwatch.ElapsedMilliseconds + "ms");
-            Console.ReadLine(); 
+
         }
     }
 }

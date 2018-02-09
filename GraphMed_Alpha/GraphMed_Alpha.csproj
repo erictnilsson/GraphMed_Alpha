@@ -78,11 +78,13 @@
     <Compile Include="Handlers\CypherHandler\Cyphers\DropCypher.cs" />
     <Compile Include="Handlers\CypherHandler\Cyphers\LoadCypher.cs" />
     <Compile Include="Handlers\CypherHandler\CypherHandler.cs" />
-    <Compile Include="Handlers\CypherHandler\Cyphers\MatchCypher.cs" />
+    <Compile Include="Handlers\CypherHandler\MatchCypher.cs" />
     <Compile Include="Handlers\FileHandler.cs" />
+    <Compile Include="Handlers\TextFileHandler.cs" />
     <Compile Include="Model\Concept.cs" />
     <Compile Include="Model\Description.cs" />
     <Compile Include="Model\Node.cs" />
+    <Compile Include="Model\Relationship.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
