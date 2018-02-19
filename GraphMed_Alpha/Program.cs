@@ -1,4 +1,4 @@
-﻿using GraphMed_Alpha.Handlers.CypherHandler;
+﻿using GraphMed_Alpha.Handlers.CypherHandlers;
 using System;
 using System.Diagnostics;
 using GraphMed_Alpha.DisplayHandler;

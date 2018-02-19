@@ -65,13 +65,16 @@ namespace GraphMed_Alpha.Handlers
             }
         }
 
-        public static Dictionary<string, List<string>> parseTermCSV(string filepath)
+        public void ParseTermCSV(string filepath)
         {
-            Dictionary<string, List<string>> dict = new Dictionary<string, List<string>>();
+            var allLines = File.ReadAllLines(filepath);
+            var row = new string[0]; 
 
-            var allLines = File.ReadLines(filepath);
+            for(int i = 0; i < allLines.Length; i++)
+            {
+                row = allLines[i].Split('\t'); 
 
-            return null; 
+            }
         }
 
         public static Dictionary<string, List<string>> SplitCSV(string filepath)

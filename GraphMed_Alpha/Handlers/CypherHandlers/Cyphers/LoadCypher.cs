@@ -1,5 +1,4 @@
-﻿using GraphMed_Alpha.Handlers.CypherHandler.Cyphers;
-using GraphMed_Alpha.Handlers.CypherHandlers.Cyphers;
+﻿using GraphMed_Alpha.Handlers.CypherHandlers.Cyphers;
 using GraphMed_Alpha.Model;
 using Neo4jClient;
 using System;
