@@ -1,4 +1,5 @@
 ﻿using GraphMed_Alpha.Handlers.CypherHandler.Cyphers;
+using GraphMed_Alpha.Handlers.CypherHandlers.Cyphers;
 using GraphMed_Alpha.Model;
 using Neo4jClient;
 using System;
@@ -8,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GraphMed_Alpha.Handlers.CypherHandler
+namespace GraphMed_Alpha.Handlers.CypherHandlers
 {
     class LoadCypher : Cypher
     {
@@ -26,14 +27,14 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
             var relationship = "refers_to";
 
             if (forceConceptRelation)
-                BulkLoadCSVWithRelations(uri: uri, targetNode: new Description(), relationship: relationship, anchorNode: new Concept());
+                BulkLoadCSVWithRelations<Description, Concept>(uri: uri, targetNode: new Description(), relationship: relationship, anchorNode: new Concept());
 
             else
-                BulkLoadCSV(uri, new Description());
+                BulkLoadCSV<Description>(uri, new Description());
 
             Console.WriteLine("Waldo successfully loaded the Descriptions!");
 
-            IndexDescription(); 
+            IndexDescription();
             SetConstraintOnDescription();
         }
 
@@ -41,14 +42,21 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
         {
             var uri = ConfigurationManager.AppSettings["concept_snapshot_deluxe"];
 
-            BulkLoadCSV(uri, new Concept());
+            BulkLoadCSV<Concept>(uri, new Concept());
             Console.WriteLine("Waldo successfully loaded the Concepts!");
             //IndexConcept();
             SetConstraintOnConcept();
         }
 
+        public void Relationships()
+        {
+            List<string> uris = new List<string>();
+            foreach (var u in uris)
+                BulkLoadRelations<Concept>(u); 
+        }
+
         /*---PRIVATES---*/
-        private void BulkLoadCSV(string uri, Node targetNode)
+        private void BulkLoadCSV<T>(string uri, Node targetNode)
         {
             try
             {
@@ -56,7 +64,7 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
                       .LoadCsv(new Uri(uri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: CommitSize)
                       .With("csvLine")
                       .Limit(Limit)
-                      .Create("(n: " + targetNode.GetType().Name + " {" + GetBuildString(targetNode) + "})")
+                      .Create("(n: " + targetNode.GetType().Name + " {" + GetBuildString<T>() + "})")
                       .ExecuteWithoutResults();
             }
             catch (NeoException)
@@ -69,7 +77,33 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
             }
         }
 
-        private void BulkLoadCSVWithRelations(string uri, Node targetNode, string relationship, Node anchorNode)
+        private void BulkLoadRelations<T1>(string fileUri)
+        {
+            var nodeType = typeof(T1).Name;
+            var relationship = fileUri.Substring(fileUri.IndexOf('-') + 1, fileUri.IndexOf('.') - fileUri.IndexOf('-') - 1).ToUpper();
+            try
+            {
+                Client.Cypher
+                      .LoadCsv(new Uri(fileUri), "csvLine", withHeaders: true, fieldTerminator: "\t", periodicCommit: CommitSize)
+                      .With("csvLine")
+                      .Limit(Limit)
+                      .Match("(c:" + nodeType + ")", "(cc:" + nodeType + ")")
+                      .Where("c.Id = csvLine.sourceId")
+                      .AndWhere("cc.Id = csvLine.destinationId")
+                      .Create("(c)-[:" + relationship + " {" + GetBuildString<Model.Relationship>() + "} ]->(cc)")
+                      .ExecuteWithoutResults();
+            }
+            catch (NeoException)
+            {
+                throw;
+            }
+            finally
+            {
+                Client.Dispose();
+            }
+        }
+
+        private void BulkLoadCSVWithRelations<T1, T2>(string uri, Node targetNode, string relationship, Node anchorNode)
         {
             string anchorType = anchorNode.GetType().Name;
             string anchorLinkProp = anchorNode.LinkProp;
@@ -85,7 +119,7 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
                   .Limit(Limit)
                   .Match("(anchor: " + anchorType + ")")
                   .Where("anchor." + anchorLinkProp + " = csvLine." + targetLinkProp)
-                  .Create("(target: " + targetType + " {" + GetBuildString(targetNode) + "})-[:" + relationship.ToUpper() + "]->(anchor)")
+                  .Create("(target: " + targetType + " {" + GetBuildString<T1>() + "})-[:" + relationship.ToUpper() + "]->(anchor)")
                   .ExecuteWithoutResults();
             }
             catch (NeoException)
@@ -155,20 +189,20 @@ namespace GraphMed_Alpha.Handlers.CypherHandler
             }
         }
 
-        private string GetBuildString(Node target)
+        private static string GetBuildString<T>()
         {
             var targetLine = "";
-            var targetLength = target.GetType().GetProperties().Length;
+            var target = typeof(T);
+            var targetLength = target.GetProperties().Length;
 
             for (int i = 0; i < targetLength; i++)
             {
-                var propName = target.GetType().GetProperties()[i].Name;
+                var propName = target.GetProperties()[i].Name;
                 var propLine = "";
 
                 if (!propName.Equals("LinkProp"))
                 {
                     propLine = propName + ": csvLine." + propName.First().ToString().ToLower() + propName.Substring(1);
-
                     if (i != targetLength - 2)
                         propLine += ", ";
 

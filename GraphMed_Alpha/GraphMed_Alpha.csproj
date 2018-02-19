@@ -78,7 +78,7 @@
     <Compile Include="Handlers\CypherHandler\Cyphers\DropCypher.cs" />
     <Compile Include="Handlers\CypherHandler\Cyphers\LoadCypher.cs" />
     <Compile Include="Handlers\CypherHandler\CypherHandler.cs" />
-    <Compile Include="Handlers\CypherHandler\MatchCypher.cs" />
+    <Compile Include="Handlers\CypherHandler\Cyphers\MatchCypher.cs" />
     <Compile Include="Handlers\FileHandler.cs" />
     <Compile Include="Handlers\TextFileHandler.cs" />
     <Compile Include="Model\Concept.cs" />
@@ -89,7 +89,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

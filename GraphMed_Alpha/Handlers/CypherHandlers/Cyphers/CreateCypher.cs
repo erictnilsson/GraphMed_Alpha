@@ -2,7 +2,7 @@
 using GraphMed_Alpha.Model;
 using System;
 
-namespace GraphMed_Alpha.Handlers.CypherHandler
+namespace GraphMed_Alpha.Handlers.CypherHandlers
 {
     public class CreateCypher : Cypher
     {

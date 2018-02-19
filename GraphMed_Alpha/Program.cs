@@ -4,6 +4,7 @@ using System.Diagnostics;
 using GraphMed_Alpha.DisplayHandler;
 using GraphMed_Alpha.Model;
 using GraphMed_Alpha.Handlers;
+using System.Configuration;
 
 namespace GraphMed_Alpha
 {
@@ -14,22 +15,15 @@ namespace GraphMed_Alpha
             /* <Diagnostics purposes> */
             var stopwatch = new Stopwatch();
             stopwatch.Start();
+            var uri = ConfigurationManager.AppSettings["relationship_snapshot"];
             /* <Testing purposes> */
-            Console.WriteLine("Search: ");
-            string search = Console.ReadLine();
+            FileHandler.WriteToFile(FileHandler.SplitCSV("C:/Users/Eric Nilsson/Documents/Neo4j/default.graphdb/import/parsedRelationship-IS_A.txt")); 
 
-            var a = CypherHandler.Match(null).ByTerm(true, search);
-            foreach (var i in a)
-            {
-                i.Print();
-                Console.WriteLine(); 
-            }
-            Console.Read();
-           
+
 
             /* <Diagnostics purposes> */
             stopwatch.Stop();
-            //System.Diagnostics.Process.Start("http://127.0.0.1:7474/browser/");
+            System.Diagnostics.Process.Start("http://127.0.0.1:7474/browser/");
             Console.WriteLine("Process completed in " + stopwatch.ElapsedMilliseconds + "ms");
 
         }

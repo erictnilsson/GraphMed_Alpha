@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualBasic.FileIO;
+﻿using GraphMed_Alpha.Handlers.CypherHandlers;
+using GraphMed_Alpha.Model;
+using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -45,6 +47,47 @@ namespace GraphMed_Alpha.Handlers
             }
             else
                 Console.WriteLine("File not found");
+        }
+
+        public static void WriteToFile(Dictionary<string, List<string>> dictionary)
+        {
+            var content = new string[0];
+            if (dictionary != null || dictionary.Count > 0)
+            {
+                var headers = dictionary.ElementAt(0).Value.FirstOrDefault();
+                for (int i = 1; i < dictionary.Count; i++)
+                {
+                    dictionary.ElementAt(i).Value.Insert(0, headers);
+                    content = dictionary.ElementAt(i).Value.ToArray();
+                    string fileName = CypherHandler.Match(null).GetTerm(dictionary.ElementAt(i).Key); 
+                    File.WriteAllLines("C:/Users/Eric Nilsson/Documents/Neo4j/default.graphdb/import/parsedRelationship-" + fileName + ".txt", content);
+                }
+            }
+        }
+
+        public static Dictionary<string, List<string>> parseTermCSV(string filepath)
+        {
+            Dictionary<string, List<string>> dict = new Dictionary<string, List<string>>();
+
+            var allLines = File.ReadLines(filepath); 
+        }
+
+        public static Dictionary<string, List<string>> SplitCSV(string filepath)
+        {
+            Dictionary<string, List<string>> dict = new Dictionary<string, List<string>>();
+
+            var allLines = File.ReadAllLines(filepath);
+            var row = new string[0];
+            for (int i = 0; i < allLines.Length; i++)
+            {
+                //foreach line 
+                row = allLines[i].Split('\t');
+                if (!dict.ContainsKey(row[7]))
+                    dict.Add(row[7], new List<string> { allLines[i] }); 
+                else
+                    dict[row[7]].Add(allLines[i]);
+            }
+            return dict;
         }
 
         /* ---PRIVATES--- */

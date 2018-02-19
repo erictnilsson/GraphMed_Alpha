@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GraphMed_Alpha.Handlers.CypherHandler.Cyphers
+namespace GraphMed_Alpha.Handlers.CypherHandlers.Cyphers
 {
     class DeleteCypher : Cypher
     {

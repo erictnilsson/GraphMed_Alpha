@@ -1,6 +1,6 @@
 ﻿using Neo4jClient;
 
-namespace GraphMed_Alpha.Handlers.CypherHandler.Cyphers
+namespace GraphMed_Alpha.Handlers.CypherHandlers.Cyphers
 {
     public abstract class Cypher
     {
