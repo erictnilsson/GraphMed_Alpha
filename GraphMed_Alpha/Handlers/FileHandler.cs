@@ -69,7 +69,9 @@ namespace GraphMed_Alpha.Handlers
         {
             Dictionary<string, List<string>> dict = new Dictionary<string, List<string>>();
 
-            var allLines = File.ReadLines(filepath); 
+            var allLines = File.ReadLines(filepath);
+
+            return null; 
         }
 
         public static Dictionary<string, List<string>> SplitCSV(string filepath)
